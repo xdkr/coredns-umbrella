@@ -3,7 +3,7 @@ module github.com/xdkr/coredns-umbrella
 go 1.25.8
 
 require (
-	github.com/coredns/caddy v1.1.4-0.20250930002214-15135a999495
+	github.com/coredns/caddy v1.1.4
 	github.com/coredns/coredns v1.14.3
 	github.com/miekg/dns v1.1.72
 )
