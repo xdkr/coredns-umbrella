@@ -4,12 +4,9 @@
 identity information to Cisco Umbrella. It adds Cisco's EDNS0 option `20292`
 (`0x4F44`) immediately before a query reaches CoreDNS's `forward` plugin.
 
-The initial compatibility target is CoreDNS 1.14.3.
-
 ## Status
 
-The repository structure and protocol contract are defined, but the plugin is
-not implemented yet.
+Work in progress.
 
 ## Corefile
 
@@ -20,15 +17,7 @@ not implemented yet.
 }
 ```
 
-The directive is intentionally top-level. It must be used in a server block
-whose downstream forwarding path is dedicated to Cisco Umbrella.
-
-Requests whose client address is not IPv4 pass through unchanged.
-
 ## Planned wire format
-
-The plugin will emit only Cisco's current option `20292`. It will not emit the
-legacy device-only option `26946`.
 
 The 28-byte option payload is:
 
