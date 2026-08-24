@@ -47,8 +47,8 @@ func TestServeDNSInjectsOption(t *testing.T) {
 	if opt == nil {
 		t.Fatal("forwarded request has no OPT record")
 	}
-	if opt.UDPSize() != dns.DefaultMsgSize {
-		t.Fatalf("got UDP size %d, want %d", opt.UDPSize(), dns.DefaultMsgSize)
+	if opt.UDPSize() != dns.MinMsgSize {
+		t.Fatalf("got UDP size %d, want %d", opt.UDPSize(), dns.MinMsgSize)
 	}
 	if opt.Do() {
 		t.Fatal("set the DO bit")

@@ -79,7 +79,7 @@ func TestForwardIntegration(t *testing.T) {
 				if opt.UDPSize() != 1232 || !opt.Do() {
 					t.Fatalf("got upstream UDP size %d and DO %t", opt.UDPSize(), opt.Do())
 				}
-			} else if opt.UDPSize() != dns.DefaultMsgSize || opt.Do() {
+			} else if opt.UDPSize() != dns.MinMsgSize || opt.Do() {
 				t.Fatalf("got upstream UDP size %d and DO %t", opt.UDPSize(), opt.Do())
 			}
 

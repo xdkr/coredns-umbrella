@@ -24,7 +24,7 @@ func (u *Umbrella) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	request := r.Copy()
 	opt := request.IsEdns0()
 	if opt == nil {
-		request.SetEdns0(dns.DefaultMsgSize, false)
+		request.SetEdns0(dns.MinMsgSize, false)
 		opt = request.IsEdns0()
 	}
 
