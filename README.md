@@ -19,6 +19,8 @@ Work in progress.
 
 ## Planned wire format
 
+https://developer.cisco.com/docs/cloud-security/network-devices-with-cisco-umbrella-dns/#identify-dns-traffic
+
 The 28-byte option payload is:
 
 | Bytes | Meaning |
