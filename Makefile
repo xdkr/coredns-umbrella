@@ -1,8 +1,7 @@
-COREDNS_VERSION := v1.14.3
-COREDNS_COMMIT := 17fceec6d93fd1dde5ba6888c363f131ff6d647f
+COREDNS_VERSION ?= v1.14.7
+COREDNS_COMMIT ?= 427fc80ed9ca47f354585eb30a3f1332950856c4
 COREDNS_REPOSITORY := https://github.com/coredns/coredns.git
 COREDNS_DIRECTORY := .coredns-build
-GO_VERSION := 1.25.8
 BINARY := coredns
 PLUGIN := umbrella:github.com/xdkr/coredns-umbrella
 
@@ -17,8 +16,8 @@ build:
 	mv "$(COREDNS_DIRECTORY)/plugin.cfg.tmp" "$(COREDNS_DIRECTORY)/plugin.cfg"
 	awk 'previous == "$(PLUGIN)" && $$0 == "forward:forward" { found = 1 } { previous = $$0 } END { exit !found }' "$(COREDNS_DIRECTORY)/plugin.cfg"
 	cd "$(COREDNS_DIRECTORY)" && go mod edit -require=github.com/xdkr/coredns-umbrella@v0.0.0 -replace=github.com/xdkr/coredns-umbrella=..
-	$(MAKE) -C "$(COREDNS_DIRECTORY)" GOLANG_VERSION="$(GO_VERSION)" GOFLAGS="-buildvcs=false" gen
-	$(MAKE) -C "$(COREDNS_DIRECTORY)" GOLANG_VERSION="$(GO_VERSION)" GOFLAGS="-buildvcs=false" GITCOMMIT="$(COREDNS_VERSION)-umbrella" BUILDOPTS="-trimpath" coredns
+	$(MAKE) -C "$(COREDNS_DIRECTORY)" GOFLAGS="-buildvcs=false" gen
+	$(MAKE) -C "$(COREDNS_DIRECTORY)" GOFLAGS="-buildvcs=false" GITCOMMIT="$(COREDNS_VERSION)-umbrella" BUILDOPTS="-trimpath" coredns
 	cp "$(COREDNS_DIRECTORY)/coredns" "$(BINARY)"
 	./"$(BINARY)" -plugins | grep -qx umbrella
 
