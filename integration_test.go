@@ -35,7 +35,8 @@ func TestForwardIntegration(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			upstreamAddress, requests := startUDPUpstream(t)
 			forwarder := newForwarder(t, upstreamAddress)
-			handler := configuredHandler(t, forwarder)
+			handler := configuredHandler(t, forwarder,
+				"umbrella device_id 0123456789abcdef organization_id 012345678")
 
 			query := newQuery()
 			if test.clientEDNS {
@@ -192,10 +193,10 @@ func newForwarder(t *testing.T, address string) *forward.Forward {
 	return forwarder
 }
 
-func configuredHandler(t *testing.T, next plugin.Handler) *Umbrella {
+func configuredHandler(t *testing.T, next plugin.Handler, corefile string) *Umbrella {
 	t.Helper()
 
-	controller := caddy.NewTestController("dns", "umbrella device_id 0123456789abcdef organization_id 012345678")
+	controller := caddy.NewTestController("dns", corefile)
 	if err := setup(controller); err != nil {
 		t.Fatal(err)
 	}
