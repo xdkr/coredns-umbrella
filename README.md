@@ -4,10 +4,6 @@
 identity information to Cisco Umbrella. It adds Cisco's EDNS0 option `20292`
 (`0x4F44`) immediately before a query reaches CoreDNS's `forward` plugin.
 
-## Status
-
-Work in progress.
-
 ## Corefile
 
 ```corefile
