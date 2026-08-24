@@ -2,7 +2,7 @@ package umbrella
 
 import (
 	"context"
-	"net"
+	"net/netip"
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/request"
@@ -15,7 +15,7 @@ type Umbrella struct {
 }
 
 func (u *Umbrella) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
-	ipv4, ok := clientIPv4(w)
+	client, ok := clientIP(w)
 	if !ok {
 		return plugin.NextOrFailure(u.Name(), u.Next, ctx, w, r)
 	}
@@ -29,7 +29,7 @@ func (u *Umbrella) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	}
 
 	removeOption(request, optionCode)
-	opt.Option = append(opt.Option, u.option.option(ipv4))
+	opt.Option = append(opt.Option, u.option.option(client))
 
 	writer := &responseWriter{ResponseWriter: w, stripOPT: !hadEDNS}
 	return plugin.NextOrFailure(u.Name(), u.Next, ctx, writer, request)
@@ -37,14 +37,14 @@ func (u *Umbrella) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 
 func (u *Umbrella) Name() string { return pluginName }
 
-func clientIPv4(w dns.ResponseWriter) ([4]byte, bool) {
+func clientIP(w dns.ResponseWriter) (netip.Addr, bool) {
 	state := request.Request{W: w}
-	ip := net.ParseIP(state.IP()).To4()
-	if ip == nil {
-		return [4]byte{}, false
+	ip, err := netip.ParseAddr(state.IP())
+	if err != nil {
+		return netip.Addr{}, false
 	}
 
-	return [4]byte(ip), true
+	return ip.Unmap().WithZone(""), true
 }
 
 type responseWriter struct {

@@ -18,7 +18,8 @@ to Cisco Umbrella. It adds Cisco's EDNS0 options to a query.
 
 https://developer.cisco.com/docs/cloud-security/network-devices-with-cisco-umbrella-dns/#identify-dns-traffic
 
-The 28-byte option payload is:
+The option payload is 28 bytes for an IPv4 client and 40 bytes for an IPv6
+client:
 
 | Bytes | Meaning |
 | --- | --- |
@@ -26,8 +27,12 @@ The 28-byte option payload is:
 | `01` | Version |
 | `00` | Flags |
 | `00 08` + 4 bytes | Organization ID, unsigned and big-endian |
-| `00 10` + 4 bytes | Client IPv4 address |
+| `00 10` + 4 bytes | Client IPv4 address, for an IPv4 client |
+| `00 20` + 16 bytes | Client IPv6 address, for an IPv6 client |
 | `00 40` + 8 bytes | 8-byte device ID |
+
+Each payload contains exactly one client address field matching the connecting
+client's address family.
 
 ## External plugin registration
 

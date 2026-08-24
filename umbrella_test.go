@@ -123,14 +123,13 @@ func TestServeDNSPreservesEDNSAndReplacesUmbrellaOptions(t *testing.T) {
 	}
 }
 
-func TestServeDNSIgnoresNonIPv4(t *testing.T) {
+func TestServeDNSInjectsIPv6Option(t *testing.T) {
 	tests := []struct {
-		name   string
-		writer dns.ResponseWriter
+		name string
+		tcp  bool
 	}{
-		{"udp ipv6", &plugintest.ResponseWriter6{}},
-		{"tcp ipv6", &plugintest.ResponseWriter6{ResponseWriter: plugintest.ResponseWriter{TCP: true}}},
-		{"invalid address", &plugintest.ResponseWriter{RemoteIP: "invalid"}},
+		{"udp", false},
+		{"tcp", true},
 	}
 
 	for _, test := range tests {
@@ -142,19 +141,69 @@ func TestServeDNSIgnoresNonIPv4(t *testing.T) {
 					forwarded = request
 					return dns.RcodeSuccess, nil
 				}),
-				option: newOptionTemplate(1, [8]byte{}),
+				option: newOptionTemplate(12345678, [8]byte{
+					0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+				}),
+			}
+			writer := &plugintest.ResponseWriter{
+				TCP:      test.tcp,
+				RemoteIP: "fe80::0202:b3ff:fe1e:8329",
+				Zone:     "eth0",
 			}
 
-			if _, err := u.ServeDNS(context.Background(), test.writer, query); err != nil {
+			if _, err := u.ServeDNS(context.Background(), writer, query); err != nil {
 				t.Fatal(err)
 			}
-			if forwarded != query {
-				t.Fatal("copied an IPv6 request")
+			if forwarded == query {
+				t.Fatal("forwarded the original request")
 			}
 			if query.IsEdns0() != nil {
-				t.Fatal("added EDNS to an IPv6 request")
+				t.Fatal("mutated the original request")
+			}
+
+			opt := forwarded.IsEdns0()
+			if opt == nil || len(opt.Option) != 1 {
+				t.Fatalf("got forwarded OPT record %v", opt)
+			}
+			local, ok := opt.Option[0].(*dns.EDNS0_LOCAL)
+			if !ok {
+				t.Fatalf("got option type %T, want *dns.EDNS0_LOCAL", opt.Option[0])
+			}
+			want := []byte{
+				0x4f, 0x44, 0x4e, 0x53, 0x01, 0x00,
+				0x00, 0x08, 0x00, 0xbc, 0x61, 0x4e,
+				0x00, 0x20, 0xfe, 0x80, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x02, 0x02,
+				0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+				0x00, 0x40, 0x01, 0x23, 0x45, 0x67,
+				0x89, 0xab, 0xcd, 0xef,
+			}
+			if local.Code != optionCode || !bytes.Equal(local.Data, want) {
+				t.Fatalf("got forwarded option %d:%x, want %d:%x", local.Code, local.Data, optionCode, want)
 			}
 		})
+	}
+}
+
+func TestServeDNSIgnoresInvalidClientAddress(t *testing.T) {
+	query := newQuery()
+	var forwarded *dns.Msg
+	u := &Umbrella{
+		Next: plugin.HandlerFunc(func(_ context.Context, _ dns.ResponseWriter, request *dns.Msg) (int, error) {
+			forwarded = request
+			return dns.RcodeSuccess, nil
+		}),
+		option: newOptionTemplate(1, [8]byte{}),
+	}
+
+	if _, err := u.ServeDNS(context.Background(), &plugintest.ResponseWriter{RemoteIP: "invalid"}, query); err != nil {
+		t.Fatal(err)
+	}
+	if forwarded != query {
+		t.Fatal("copied a request with an invalid client address")
+	}
+	if query.IsEdns0() != nil {
+		t.Fatal("added EDNS to a request with an invalid client address")
 	}
 }
 
@@ -172,7 +221,7 @@ func TestServeDNSStripsSynthesizedOPTFromResponse(t *testing.T) {
 		Txt: []string{"value"},
 	})
 	original := packed(t, response)
-	recorder := dnstest.NewRecorder(&plugintest.ResponseWriter{RemoteIP: "192.0.2.1"})
+	recorder := dnstest.NewRecorder(&plugintest.ResponseWriter{RemoteIP: "2001:db8::1"})
 
 	u := &Umbrella{
 		Next: plugin.HandlerFunc(func(_ context.Context, writer dns.ResponseWriter, _ *dns.Msg) (int, error) {
