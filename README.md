@@ -44,10 +44,6 @@ Build locally:
 make build
 ```
 
-## Live validation
-
-Run the `Live Umbrella validation` workflow.
-
 ## License
 
 MIT

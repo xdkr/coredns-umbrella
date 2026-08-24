@@ -1,6 +1,7 @@
 name: Live Umbrella validation
 
 on:
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -22,7 +23,6 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - run: make build
       - name: Validate with Umbrella
         env:
           UMBRELLA_DEVICE_ID: 0123456789abcdef
