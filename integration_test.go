@@ -22,13 +22,32 @@ import (
 )
 
 func TestForwardIntegration(t *testing.T) {
+	ipv4OptionData := []byte{
+		0x4f, 0x44, 0x4e, 0x53, 0x01, 0x00,
+		0x00, 0x08, 0x00, 0xbc, 0x61, 0x4e,
+		0x00, 0x10, 0xc0, 0xa8, 0x01, 0x37,
+		0x00, 0x40, 0x01, 0x23, 0x45, 0x67,
+		0x89, 0xab, 0xcd, 0xef,
+	}
+	ipv6OptionData := []byte{
+		0x4f, 0x44, 0x4e, 0x53, 0x01, 0x00,
+		0x00, 0x08, 0x00, 0xbc, 0x61, 0x4e,
+		0x00, 0x20, 0xfe, 0x80, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x02, 0x02,
+		0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+		0x00, 0x40, 0x01, 0x23, 0x45, 0x67,
+		0x89, 0xab, 0xcd, 0xef,
+	}
 	tests := []struct {
-		name             string
-		clientEDNS       bool
-		wantRequestCodes []uint16
+		name           string
+		clientIP       string
+		clientEDNS     bool
+		wantOptionData []byte
 	}{
-		{"without client EDNS", false, []uint16{optionCode}},
-		{"with client EDNS", true, []uint16{dns.EDNS0NSID, optionCode}},
+		{"ipv4 without client EDNS", "192.168.1.55", false, ipv4OptionData},
+		{"ipv4 with client EDNS", "192.168.1.55", true, ipv4OptionData},
+		{"ipv6 without client EDNS", "fe80::0202:b3ff:fe1e:8329", false, ipv6OptionData},
+		{"ipv6 with client EDNS", "fe80::0202:b3ff:fe1e:8329", true, ipv6OptionData},
 	}
 
 	for _, test := range tests {
@@ -45,7 +64,7 @@ func TestForwardIntegration(t *testing.T) {
 			}
 			original := packed(t, query)
 
-			recorder := dnstest.NewRecorder(&plugintest.ResponseWriter{RemoteIP: "192.168.1.55"})
+			recorder := dnstest.NewRecorder(&plugintest.ResponseWriter{RemoteIP: test.clientIP})
 			writer := request.NewScrubWriter(query, recorder)
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
@@ -72,8 +91,12 @@ func TestForwardIntegration(t *testing.T) {
 			if opt == nil {
 				t.Fatal("upstream query has no OPT record")
 			}
-			if got := optionCodes(opt); !reflect.DeepEqual(got, test.wantRequestCodes) {
-				t.Fatalf("got upstream option codes %v, want %v", got, test.wantRequestCodes)
+			wantRequestCodes := []uint16{optionCode}
+			if test.clientEDNS {
+				wantRequestCodes = []uint16{dns.EDNS0NSID, optionCode}
+			}
+			if got := optionCodes(opt); !reflect.DeepEqual(got, wantRequestCodes) {
+				t.Fatalf("got upstream option codes %v, want %v", got, wantRequestCodes)
 			}
 			if test.clientEDNS {
 				if opt.UDPSize() != 1232 || !opt.Do() {
@@ -87,14 +110,7 @@ func TestForwardIntegration(t *testing.T) {
 			if !ok {
 				t.Fatalf("got option type %T, want *dns.EDNS0_LOCAL", opt.Option[len(opt.Option)-1])
 			}
-			wantData := []byte{
-				0x4f, 0x44, 0x4e, 0x53, 0x01, 0x00,
-				0x00, 0x08, 0x00, 0xbc, 0x61, 0x4e,
-				0x00, 0x10, 0xc0, 0xa8, 0x01, 0x37,
-				0x00, 0x40, 0x01, 0x23, 0x45, 0x67,
-				0x89, 0xab, 0xcd, 0xef,
-			}
-			if local.Code != optionCode || !bytes.Equal(local.Data, wantData) {
+			if local.Code != optionCode || !bytes.Equal(local.Data, test.wantOptionData) {
 				t.Fatalf("got upstream option %d:%x", local.Code, local.Data)
 			}
 

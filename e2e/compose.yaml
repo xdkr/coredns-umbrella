@@ -1,0 +1,117 @@
+name: coredns-umbrella-e2e
+
+x-security: &security
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
+x-tools: &tools
+  <<: *security
+  image: coredns-umbrella-e2e-tools
+  build:
+    context: ..
+    dockerfile: e2e/tools.Dockerfile
+
+x-coredns: &coredns
+  <<: *security
+  image: coredns-umbrella-e2e-coredns
+  build:
+    context: ..
+    dockerfile: e2e/coredns.Dockerfile
+
+services:
+  fake-cisco-ipv4:
+    <<: *tools
+    profiles: [ipv4]
+    command:
+      - /fake-cisco
+    environment:
+      LISTEN_ADDRESS: 0.0.0.0:5300
+      EXPECTED_CLIENT_IP: 172.30.53.10
+      EXPECTED_DEVICE_ID: 0123456789abcdef
+      EXPECTED_ORGANIZATION_ID: "12345678"
+    networks:
+      e2e-ipv4:
+        ipv4_address: 172.30.53.30
+
+  coredns-ipv4:
+    <<: *coredns
+    profiles: [ipv4]
+    depends_on:
+      - fake-cisco-ipv4
+    environment:
+      BIND_ADDRESS: 172.30.53.20
+      UPSTREAM: 172.30.53.30:5300
+    networks:
+      e2e-ipv4:
+        ipv4_address: 172.30.53.20
+
+  client-ipv4:
+    <<: *tools
+    profiles: [ipv4]
+    command:
+      - /client
+    environment:
+      DNS_SERVER: 172.30.53.20:1053
+    depends_on:
+      - coredns-ipv4
+      - fake-cisco-ipv4
+    networks:
+      e2e-ipv4:
+        ipv4_address: 172.30.53.10
+
+  fake-cisco-ipv6:
+    <<: *tools
+    profiles: [ipv6]
+    command:
+      - /fake-cisco
+    environment:
+      LISTEN_ADDRESS: "[::]:5300"
+      EXPECTED_CLIENT_IP: fd00:53:53::10
+      EXPECTED_DEVICE_ID: 0123456789abcdef
+      EXPECTED_ORGANIZATION_ID: "12345678"
+    networks:
+      e2e-ipv6:
+        ipv6_address: fd00:53:53::30
+
+  coredns-ipv6:
+    <<: *coredns
+    profiles: [ipv6]
+    depends_on:
+      - fake-cisco-ipv6
+    environment:
+      BIND_ADDRESS: fd00:53:53::20
+      UPSTREAM: "[fd00:53:53::30]:5300"
+    networks:
+      e2e-ipv6:
+        ipv6_address: fd00:53:53::20
+
+  client-ipv6:
+    <<: *tools
+    profiles: [ipv6]
+    command:
+      - /client
+    environment:
+      DNS_SERVER: "[fd00:53:53::20]:1053"
+    depends_on:
+      - coredns-ipv6
+      - fake-cisco-ipv6
+    networks:
+      e2e-ipv6:
+        ipv6_address: fd00:53:53::10
+
+networks:
+  e2e-ipv4:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.53.0/24
+
+  e2e-ipv6:
+    internal: true
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:53:53::/64
