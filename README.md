@@ -1,6 +1,8 @@
 # coredns-umbrella
 
-[![Lines of code](https://img.shields.io/endpoint?url=https%3A%2F%2Fghloc.vercel.app%2Fapi%2Fxdkr%2Fcoredns-umbrella%2Fbadge)](https://ghloc.dev/xdkr/coredns-umbrella?branch=main) [![Tests](https://img.shields.io/github/actions/workflow/status/xdkr/coredns-umbrella/ci.yml?branch=main&event=push&label=tests)](https://github.com/xdkr/coredns-umbrella/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/xdkr/coredns-umbrella?sort=semver&label=release)](https://github.com/xdkr/coredns-umbrella/releases/latest)
+[![Lines of code][lines-badge]][lines-link]
+[![Tests][tests-badge]][tests-link]
+[![Release][release-badge]][release-link]
 
 CoreDNS-Umbrella is a CoreDNS plugin for forwarding client identity information
 to Cisco Umbrella. It adds Cisco's EDNS0 options to a query.
@@ -16,7 +18,7 @@ to Cisco Umbrella. It adds Cisco's EDNS0 options to a query.
 
 ## Wire format
 
-https://developer.cisco.com/docs/cloud-security/network-devices-with-cisco-umbrella-dns/#identify-dns-traffic
+[Cisco Umbrella wire-format documentation][cisco-wire-format]
 
 The option payload is 28 bytes for an IPv4 client and 40 bytes for an IPv6
 client:
@@ -34,10 +36,9 @@ client:
 Each payload contains exactly one client address field matching the connecting
 client's address family.
 
-## External plugin registration
+## Register plugin
 
-CoreDNS plugins are statically linked. Add the following entry immediately
-before `forward` in CoreDNS's `plugin.cfg`:
+Add the following entry before `forward` in CoreDNS's `plugin.cfg`:
 
 ```text
 umbrella:github.com/xdkr/coredns-umbrella
@@ -74,3 +75,11 @@ Docker harness.
 ## License
 
 MIT
+
+[cisco-wire-format]: https://developer.cisco.com/docs/cloud-security/network-devices-with-cisco-umbrella-dns/#identify-dns-traffic
+[lines-badge]: https://img.shields.io/endpoint?url=https%3A%2F%2Fghloc.vercel.app%2Fapi%2Fxdkr%2Fcoredns-umbrella%2Fbadge
+[lines-link]: https://ghloc.dev/xdkr/coredns-umbrella?branch=main
+[release-badge]: https://img.shields.io/github/v/release/xdkr/coredns-umbrella?sort=semver&label=release
+[release-link]: https://github.com/xdkr/coredns-umbrella/releases/latest
+[tests-badge]: https://img.shields.io/github/actions/workflow/status/xdkr/coredns-umbrella/ci.yml?branch=main&event=push&label=tests
+[tests-link]: https://github.com/xdkr/coredns-umbrella/actions/workflows/ci.yml

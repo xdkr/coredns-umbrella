@@ -142,7 +142,7 @@ func (v *validator) validateRequest(request *dns.Msg, network string) ([]byte, e
 			}
 			local, ok := option.(*dns.EDNS0_LOCAL)
 			if !ok {
-				return nil, fmt.Errorf("Umbrella option has type %T", option)
+				return nil, fmt.Errorf("umbrella option has type %T", option)
 			}
 			umbrellaCount++
 			umbrellaData = local.Data

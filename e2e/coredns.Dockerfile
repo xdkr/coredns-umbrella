@@ -13,6 +13,8 @@ RUN git -c advice.detachedHead=false clone \
 
 WORKDIR /src/coredns
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN test "$(git rev-parse HEAD)" = "${COREDNS_COMMIT}"
 
 COPY go.mod go.sum /src/coredns-umbrella/
@@ -43,4 +45,3 @@ USER 65532:65532
 EXPOSE 1053/udp 1053/tcp
 ENTRYPOINT ["/coredns"]
 CMD ["-conf", "/etc/coredns/Corefile"]
-
