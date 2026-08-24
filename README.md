@@ -42,7 +42,11 @@ umbrella:github.com/xdkr/coredns-umbrella
 forward:forward
 ```
 
-Then generate and build CoreDNS.
+Build locally:
+
+```sh
+make build
+```
 
 ## License
 
