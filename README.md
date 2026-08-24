@@ -17,7 +17,7 @@ Work in progress.
 }
 ```
 
-## Planned wire format
+## Wire format
 
 https://developer.cisco.com/docs/cloud-security/network-devices-with-cisco-umbrella-dns/#identify-dns-traffic
 
