@@ -42,9 +42,7 @@ umbrella:github.com/xdkr/coredns-umbrella
 forward:forward
 ```
 
-Then generate and build CoreDNS. The repository will include a pinned,
-reproducible build wrapper following the approach used by
-[`dokku/coredns-docker`](https://github.com/dokku/coredns-docker).
+Then generate and build CoreDNS.
 
 ## License
 
