@@ -1,5 +1,5 @@
-COREDNS_VERSION ?= v1.14.3
-COREDNS_COMMIT ?= 17fceec6d93fd1dde5ba6888c363f131ff6d647f
+COREDNS_VERSION ?= v1.14.7
+COREDNS_COMMIT ?= 427fc80ed9ca47f354585eb30a3f1332950856c4
 COREDNS_REPOSITORY := https://github.com/coredns/coredns.git
 COREDNS_DIRECTORY := .coredns-build
 BINARY := coredns
