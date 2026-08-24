@@ -1,0 +1,6 @@
+.git
+.coredns-build
+coredns
+coverage.out
+*.test
+

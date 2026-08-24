@@ -50,6 +50,27 @@ Build locally:
 make build
 ```
 
+## Testing
+
+Run the Go test suite:
+
+```sh
+make test
+```
+
+Run the IPv4 and IPv6 end-to-end profiles. Each uses a DNS client, this plugin
+compiled into CoreDNS, and a validating fake Cisco receiver:
+
+```sh
+make test-e2e
+```
+
+Run either profile separately with `make test-e2e-ipv4` or
+`make test-e2e-ipv6`.
+
+See [`e2e/README.md`](e2e/README.md) for the validations performed by the
+Docker harness.
+
 ## License
 
 MIT

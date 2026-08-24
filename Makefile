@@ -4,8 +4,9 @@ COREDNS_REPOSITORY := https://github.com/coredns/coredns.git
 COREDNS_DIRECTORY := .coredns-build
 BINARY := coredns
 PLUGIN := umbrella:github.com/xdkr/coredns-umbrella
+E2E_COMPOSE := docker compose -f e2e/compose.yaml
 
-.PHONY: build clean test
+.PHONY: build clean test test-e2e test-e2e-ipv4 test-e2e-ipv6
 
 build:
 	rm -rf -- "$(COREDNS_DIRECTORY)"
@@ -23,6 +24,22 @@ build:
 
 test:
 	go test ./...
+
+test-e2e:
+	$(MAKE) test-e2e-ipv4
+	$(MAKE) test-e2e-ipv6
+
+test-e2e-ipv4:
+	@status=0; \
+	$(E2E_COMPOSE) --profile ipv4 up --build --abort-on-container-exit --exit-code-from client-ipv4 || status=$$?; \
+	$(E2E_COMPOSE) --profile ipv4 down --volumes --remove-orphans; \
+	exit $$status
+
+test-e2e-ipv6:
+	@status=0; \
+	$(E2E_COMPOSE) --profile ipv6 up --build --abort-on-container-exit --exit-code-from client-ipv6 || status=$$?; \
+	$(E2E_COMPOSE) --profile ipv6 down --volumes --remove-orphans; \
+	exit $$status
 
 clean:
 	rm -rf -- "$(COREDNS_DIRECTORY)" "$(BINARY)"

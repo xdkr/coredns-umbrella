@@ -1,0 +1,6 @@
+.:1053 {
+	errors
+	bind {$BIND_ADDRESS}
+	umbrella organization_id 12345678 device_id 0123456789abcdef
+	forward . {$UPSTREAM}
+}
