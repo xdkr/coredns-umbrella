@@ -2,9 +2,8 @@
 
 [![Lines of code](https://img.shields.io/endpoint?url=https%3A%2F%2Fghloc.vercel.app%2Fapi%2Fxdkr%2Fcoredns-umbrella%2Fbadge)](https://ghloc.dev/xdkr/coredns-umbrella?branch=main) [![Tests](https://img.shields.io/github/actions/workflow/status/xdkr/coredns-umbrella/ci.yml?branch=main&event=push&label=tests)](https://github.com/xdkr/coredns-umbrella/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/xdkr/coredns-umbrella?sort=semver&label=release)](https://github.com/xdkr/coredns-umbrella/releases/latest)
 
-`coredns-umbrella` is an external CoreDNS plugin for forwarding IPv4 client
-identity information to Cisco Umbrella. It adds Cisco's EDNS0 options to a
-query.
+CoreDNS-Umbrella is a CoreDNS plugin for forwarding client identity information
+to Cisco Umbrella. It adds Cisco's EDNS0 options to a query.
 
 ## Corefile
 
@@ -28,7 +27,7 @@ The 28-byte option payload is:
 | `00` | Flags |
 | `00 08` + 4 bytes | Organization ID, unsigned and big-endian |
 | `00 10` + 4 bytes | Client IPv4 address |
-| `00 40` + 8 bytes | Device ID decoded from 16 hexadecimal characters |
+| `00 40` + 8 bytes | 8-byte device ID |
 
 ## External plugin registration
 
