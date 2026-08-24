@@ -1,0 +1,5 @@
+/.coredns-build/
+/build/
+/dist/
+/coredns
+/coverage.out
